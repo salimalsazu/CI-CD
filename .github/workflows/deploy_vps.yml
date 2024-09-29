@@ -1,0 +1,89 @@
+name: Deploy Docker Image
+
+on:
+  workflow_run:
+    workflows: ["Publish Docker Image"]  # Ensure this matches exactly with the docker_build.yml's 'name'
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      # Ensure Postgres is running
+      - name: Ensure Postgres is running
+        run: |
+          if [ $(docker ps -q -f name=postgres) ]; then
+            echo "Postgres is already running";
+          elif [ $(docker ps -a -q -f name=postgres) ]; then
+            echo "Postgres container exists but is stopped, starting it";
+            docker start postgres;
+          else
+            echo "Postgres container does not exist, creating and starting it";
+            docker network create my-network || true
+            docker run -d --name postgres --network my-network -e POSTGRES_PASSWORD=salimalsazu -e POSTGRES_DB=kid -p 5432:5432 postgres:latest;
+          fi
+
+      # Deploy the Client
+      - name: Stop the old client container
+        run: docker stop client-container || true
+
+      - name: Remove the old client container
+        run: docker rm -f client-container || true
+
+      - name: Delete the old client image
+        run: docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/kid-client:latest || true
+
+      - name: Pull the latest client image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kid-client:latest
+
+      - name: Run the new client container
+        run: docker run -d -p 3000:3000 --name client-container --network my-network ${{ secrets.DOCKERHUB_USERNAME }}/kid-client:latest
+
+      # Deploy the Dashboard
+      - name: Stop the old dashboard container
+        run: docker stop dashboard-container || true
+
+      - name: Remove the old dashboard container
+        run: docker rm -f dashboard-container || true
+
+      - name: Delete the old dashboard image
+        run: docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/kid-dashboard:latest || true
+
+      - name: Pull the latest dashboard image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kid-dashboard:latest
+
+      - name: Run the new dashboard container
+        run: docker run -d -p 4000:4000 --name dashboard-container --network my-network ${{ secrets.DOCKERHUB_USERNAME }}/kid-dashboard:latest
+
+      # Deploy the Server
+      - name: Stop the old server container
+        run: docker stop server-container || true
+
+      - name: Remove the old server container
+        run: docker rm -f server-container || true
+
+      - name: Delete the old server image
+        run: docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/kid-server:latest || true
+
+      - name: Pull the latest server image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kid-server:latest
+
+      - name: Run the new server container
+        run: docker run -d -p 7000:7000 --name server-container --network my-network ${{ secrets.DOCKERHUB_USERNAME }}/kid-server:latest
+
+      # Deploy the Backup Service
+      - name: Stop the old backup service container
+        run: docker stop backup-service || true
+
+      - name: Remove the old backup service container
+        run: docker rm -f backup-service || true
+
+      - name: Delete the old backup service image
+        run: docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/kid-backup-service:latest || true
+
+      - name: Pull the latest backup service image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kid-backup-service:latest
+
+      - name: Run the new backup service container
+        run: docker run -d --name backup-service --network my-network ${{ secrets.DOCKERHUB_USERNAME }}/kid-backup-service:latest
