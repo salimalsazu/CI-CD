@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    hostname: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: salimalsazu
+      POSTGRES_DB: erp
+    volumes:
+      - type: bind
+        # source: C:\data\db
+        source: /root/volumes/erp/db
+        target: /var/lib/postgresql/data
+    restart: unless-stopped
+
+  server:
+    stdin_open: true
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: server:latest
+    container_name: server-container
+    depends_on:
+      - postgres
+    ports:
+      - 9000:9000
+    volumes:
+      - type: bind
+        # source: C:\data\data
+        source: /root/volumes/erp/data
+        target: /app/uploads
+
+  client:
+    stdin_open: true
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: client:latest
+    container_name: client-container
+    depends_on:
+      - server
+    ports:
+      - 3000:3000
+
+  dashboard:
+    stdin_open: true
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    image: dashboard:latest
+    container_name: dashboard-container
+    depends_on:
+      - server
+    ports:
+      - 4000:4000
+
+  backup-service:
+    build:
+      context: ./backup-service
+    container_name: backup-service
+    volumes:
+      - type: bind
+        # source: C:/data/backup
+        source: /var/backups
+        target: /backup
+    depends_on:
+      - postgres
+    restart: unless-stopped

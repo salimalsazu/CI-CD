@@ -1,0 +1,27 @@
+
+// User Part
+
+model User {
+  userId        String          @id @default(uuid())
+  email         String          @unique
+  password      String
+  createdAt     DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(0)
+  profileId     String?         @unique
+  profile       Profile?        @relation(fields: [profileId], references: [profileId])
+  productReview ProductReview[]
+  kidDetails    KidDetails[]
+}
+
+model Profile {
+  profileId          String    @id @default(uuid())
+  firstName          String?
+  lastName           String?
+  mobileNumber       String?
+  displayContactInfo Boolean?  @default(true)
+  address            String?
+  role               UserRoles @default(USER)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(0)
+  user               User?
+}

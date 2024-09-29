@@ -1,0 +1,57 @@
+// ! enums -----------------------------------
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  ON_HOLD
+  REJECTED
+}
+
+enum ProductStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum BarcodeStatus {
+  AVAILABLE
+  ACTIVE
+  INACTIVE
+}
+
+// enum for promotion types
+enum PromotionType {
+  BUY_ITEM_GET_ITEM
+  DISCOUNT_BASED_ON_AMOUNT
+}
+
+enum UserRoles {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+enum PaymentGateway {
+  STRIPE
+  PAYPAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+  ON_HOLD
+  EXPIRED
+  PARTIAL_PAYMENT
+}

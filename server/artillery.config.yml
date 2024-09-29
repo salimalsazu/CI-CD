@@ -1,0 +1,13 @@
+config:
+  # target: 'http://localhost:9000/backend/api/v1'
+  target: 'http://85.239.232.185:9000/backend/api/v1/'
+  phases:
+    - name: 'warmup'
+      duration: 60
+      arrivalRate: 5000
+
+scenarios:
+  - name: 'user test'
+    flow:
+      - get:
+          url: '/users'

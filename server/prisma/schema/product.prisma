@@ -1,0 +1,84 @@
+
+// Product Part 
+
+model Category {
+  categoryId    String    @id @default(uuid())
+  categoryName  String    @unique
+  categoryHref  String    @unique
+  description   String
+  categoryImage String
+  createdAt     DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(0)
+  product       Product[]
+}
+
+model Product {
+  productId            String                    @id @default(uuid())
+  productName          String
+  productImage         String[]
+  productPrice         Float
+  productDescription   String
+  productStatus        ProductStatus             @default(AVAILABLE)
+  categoryId           String?
+  category             Category?                 @relation(fields: [categoryId], references: [categoryId], onDelete: SetNull)
+  createdAt            DateTime                  @default(now()) @db.Timestamptz(0)
+  updatedAt            DateTime                  @updatedAt @db.Timestamptz(0)
+  productQA            ProductQA[]
+  productReview        ProductReview[]
+  // promoCode          PromoCode?
+  featuredImage        String
+  // a many-to-many relationship between products and variations
+  productVariations    ProductVariation[]
+  requiredInPromotions BuyItemGetItemPromotion[] @relation("RequiredItems")
+  rewardedInPromotions BuyItemGetItemPromotion[] @relation("RewardItems")
+}
+
+// the model for product variations
+// barcodeCode  String    @unique
+model ProductVariation {
+  variantId    String    @id @default(uuid())
+  variantPrice Float
+  color        Json
+  // size         String?
+  image        String
+  // stock        Int       @default(0)
+  productId    String?
+  product      Product?  @relation(fields: [productId], references: [productId], onDelete: SetNull)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
+  barCodes     BarCode[]
+}
+//QR Code Model
+model BarCode {
+  barcodeId     String            @id @default(uuid())
+  code          String            @unique
+  barcodeStatus BarcodeStatus     @default(INACTIVE)
+  variantId     String?
+  variant       ProductVariation? @relation(fields: [variantId], references: [variantId], onDelete: SetNull)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
+  kidDetails    KidDetails?
+}
+
+model ProductQA {
+  productQaId String   @id @default(uuid())
+  question    String
+  answer      String
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [productId], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
+}
+
+model ProductReview {
+  productReviewId String   @id @default(uuid())
+  review          String
+  rating          Int
+  reviewImage     String
+  productId       String?
+  product         Product? @relation(fields: [productId], references: [productId], onDelete: SetNull)
+  userId          String
+  user            User     @relation(fields: [userId], references: [userId])
+  createdAt       DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(0)
+}

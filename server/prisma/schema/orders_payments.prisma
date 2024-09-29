@@ -1,0 +1,34 @@
+model Order {
+  orderId        String         @id @default(uuid())
+  orderStatus    OrderStatus    @default(PENDING)
+  statusReason   Json?
+  deliveryStatus DeliveryStatus @default(PENDING)
+  deliveryInfo   Json?
+  cartItems      Json[]
+  createdAt      DateTime       @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(0)
+  paymentInfo    PaymentReport?
+}
+
+model PaymentReport {
+  paymentReportId        String         @id @default(uuid())
+  paymentPlatformId      String         @unique
+  gateWayTransactionTime DateTime?
+  paymentStatus          String?
+  amountToPay            Float?
+  amountPaid             Float?
+  currency               String?
+  platformFee            Float?
+  netAmount              Float?
+  refundLink             String?
+  payerName              String?   
+  payerEmailAddress      String?
+  paymentPlatform        PaymentGateway
+  transactionCreatedTime DateTime?
+  // 
+  orderId                String         @unique
+  order                  Order?         @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  // 
+  createdAt              DateTime       @default(now()) @db.Timestamptz(0)
+  updatedAt              DateTime       @updatedAt @db.Timestamptz(0)
+}

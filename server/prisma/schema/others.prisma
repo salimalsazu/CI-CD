@@ -1,0 +1,94 @@
+
+model KidDetails {
+  kidId     String   @id @default(uuid())
+  firstName String
+  lastName  String?
+  kidImage  String?
+  kidAge    DateTime
+  relations Json[]
+  barcodeId String?  @unique
+  barCode   BarCode? @relation(fields: [barcodeId], references: [barcodeId], onDelete: SetNull)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+}
+
+// The model for promotions
+model Promotion {
+  promotionId             String                   @id @default(uuid())
+  promotionName           String
+  promoCode               String                   @unique
+  isActive                Boolean                  @default(false)
+  startDate               DateTime?
+  endDate                 DateTime?
+  type                    PromotionType
+  createdAt               DateTime                 @default(now()) @db.Timestamptz(0)
+  updatedAt               DateTime                 @updatedAt @db.Timestamptz(0)
+  buyItemGetItemPromotion BuyItemGetItemPromotion?
+}
+
+// Define schema for buy something get something promotion
+model BuyItemGetItemPromotion {
+  id          Int       @id @default(autoincrement())
+  promotionId String    @unique
+  promotion   Promotion @relation(fields: [promotionId], references: [promotionId], onDelete: Cascade)
+
+  requiredItemId   String
+  requiredItem     Product @relation("RequiredItems", references: [productId], fields: [requiredItemId], onDelete: SetDefault)
+  requiredQuantity Int     @default(1)
+
+  createdAt      DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(0)
+  rewardItemId   String
+  rewardItem     Product  @relation("RewardItems", references: [productId], fields: [rewardItemId], onDelete: SetDefault)
+  rewardQuantity Int      @default(1)
+}
+
+model Testimonial {
+  testimonialId          String   @id @default(uuid())
+  clientName             String
+  clientImage            String
+  testimonialTitle       String
+  testimonialDescription String
+  rating                 String
+  createdAt              DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt              DateTime @updatedAt @db.Timestamptz(0)
+}
+
+model Tax {
+  taxId     String   @id @default(uuid())
+  state     String
+  tax       Float
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+}
+
+
+
+model Blogs {
+  blogId       String @id @default(uuid())
+  title        String
+  description  String
+  blogImage    String
+  categoryName String
+  blogHref     String @unique
+
+  // 
+  createdAt DateTime   @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(0)
+  comments  Comments[]
+}
+
+model Comments {
+  commentId String   @id @default(uuid())
+  name      String
+  email     String
+  comment   String
+  // 
+  blogId    String?
+  blog      Blogs?   @relation(fields: [blogId], references: [blogId], onDelete: SetNull)
+  // 
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+}
